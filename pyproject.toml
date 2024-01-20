@@ -13,6 +13,9 @@ polars = "^0.19.19"
 jax = {extras = ["cpu"], version = "^0.4.23"}
 matplotlib = "^3.8.2"
 pandas = "^2.1.4"
+torch = "^2.1.2"
+scikit-learn = "^1.4.0"
+torchtext = "^0.16.2"
 
 
 [build-system]
