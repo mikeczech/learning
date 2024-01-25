@@ -15,6 +15,7 @@ class QueryTower(nn.Module):
         self.user_id_to_index = {user_id: i for i, user_id in enumerate(user_ids)}
         self.user_embedding = nn.Embedding(len(user_ids), user_emb_dim)
         self.normalized_age = nn.BatchNorm1d(1)
+        self.relu = nn.ReLU()
         self.linear = nn.Linear(
             user_emb_dim + 1, output_dim
         )  # what woulde be a good target dimension?
@@ -26,6 +27,7 @@ class QueryTower(nn.Module):
         age_features = self.normalized_age(ages.reshape(-1, 1))
 
         features = torch.cat([user_features, age_features], dim=1)
+        features = self.relu(features)
 
         return self.linear(features)
 
@@ -54,6 +56,7 @@ class ItemTower(nn.Module):
             name: i for i, name in enumerate(garment_group_names)
         }
         self.item_embedding = nn.Embedding(len(item_ids), item_emb_dim)
+        self.relu = nn.ReLU()
         self.linear = nn.Linear(
             item_emb_dim + len(index_group_names) + len(garment_group_names),
             output_dim,
@@ -77,11 +80,11 @@ class ItemTower(nn.Module):
         garment_group_features = F.one_hot(
             garment_group_indices, num_classes=len(self.garment_group_to_index)
         )
-        return index_group_features
 
         features = torch.cat(
             [item_features, index_group_features, garment_group_features], dim=1
         )
+        features = self.relu(features)
 
         return self.linear(features)
 
