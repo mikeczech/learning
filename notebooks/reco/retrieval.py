@@ -104,3 +104,35 @@ class ItemTower(nn.Module):
             [self.garment_group_to_index[name] for name in garment_group_names],
             dtype=torch.long,
         )
+
+
+class TwoTowerModel(nn.Module):
+    def __init__(self, query_model, item_model):
+        super(TwoTowerModel, self).__init__()
+        self._query_model = query_model
+        self._item_model = item_model
+
+    def forward(
+        self,
+        customer_ids: List[str],
+        ages: torch.Tensor,
+        item_ids: List[str],
+        index_group_names: List[str],
+        garment_group_names: List[str],
+    ):
+        query_embedding = self._query_model(customer_ids, ages)
+        item_embedding = self._item_model(
+            item_ids, index_group_names, garment_group_names
+        )
+
+        scores = torch.matmul(query_embedding, item_embedding.t())
+        scores = F.log_softmax(scores, dim=1)  # NLLoss requires log probabilites
+
+        num_queries = query_embedding.shape[0]
+        num_items = item_embedding.shape[0]
+
+        labels = torch.argmax(torch.eye(num_queries, num_items), dim=1)
+
+        loss = F.nll_loss(scores, labels)
+
+        return loss
