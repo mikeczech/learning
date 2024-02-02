@@ -141,7 +141,6 @@ class TwoTowerModel(nn.Module):
         index_group_names: List[str],
         garment_group_names: List[str],
     ):
-        print(f"TwoTower: {ages.dtype}")
         query_embedding = self._query_model(customer_ids, ages)
         item_embedding = self._item_model(
             item_ids, index_group_names, garment_group_names
