@@ -1,9 +1,30 @@
 from typing import List
 from collections import Counter
 
+from polars import DataFrame
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.utils.data import Dataset
+
+
+class InteractionDataset(Dataset):
+    def __init__(self, df: DataFrame):
+        self.df = df
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        row = self.df.row(idx, named=True)
+        customer_id = row["customer_id"]
+        article_id = str(row["article_id"])
+        age = torch.tensor(row["age"], dtype=torch.float)
+        index_group_name = row["index_group_name"]
+        garment_group_name = row["garment_group_name"]
+
+        return customer_id, article_id, age, index_group_name, garment_group_name
 
 
 class QueryTower(nn.Module):
@@ -115,11 +136,12 @@ class TwoTowerModel(nn.Module):
     def forward(
         self,
         customer_ids: List[str],
-        ages: torch.Tensor,
         item_ids: List[str],
+        ages: torch.Tensor,
         index_group_names: List[str],
         garment_group_names: List[str],
     ):
+        print(f"TwoTower: {ages.dtype}")
         query_embedding = self._query_model(customer_ids, ages)
         item_embedding = self._item_model(
             item_ids, index_group_names, garment_group_names
