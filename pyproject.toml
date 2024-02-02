@@ -18,6 +18,7 @@ scikit-learn = "^1.4.0"
 torchtext = "^0.16.2"
 black = "^23.12.1"
 torchaudio = "^2.1.2"
+skorch = "^0.15.0"
 
 
 [build-system]

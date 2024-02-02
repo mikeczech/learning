@@ -2812,6 +2812,28 @@ files = [
 ]
 
 [[package]]
+name = "skorch"
+version = "0.15.0"
+description = "scikit-learn compatible neural network library for pytorch"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "skorch-0.15.0-py3-none-any.whl", hash = "sha256:b923847cdd815c4657972e7e041c92e3568a9ba6d95ecff88bbc1f6431631445"},
+    {file = "skorch-0.15.0.tar.gz", hash = "sha256:dfd5d50650a66e0d7adb3f6e2fce0666b53ebfe33cc1a5db19d555ef66587fce"},
+]
+
+[package.dependencies]
+numpy = ">=1.13.3"
+scikit-learn = ">=0.22.0"
+scipy = ">=1.1.0"
+tabulate = ">=0.7.7"
+tqdm = ">=4.14.0"
+
+[package.extras]
+docs = ["Sphinx", "numpydoc", "sphinx-rtd-theme"]
+testing = ["accelerate (>=0.22.0)", "fire", "flaky", "future (>=0.17.1)", "gpytorch (>=1.5)", "jupyter", "matplotlib (>=2.0.2)", "neptune", "numpydoc", "openpyxl", "pandas", "pillow", "protobuf (>=3.12.0,<4.0dev)", "pylint", "pytest (>=3.4)", "pytest-cov", "sacred", "safetensors (>=0.3.1)", "sphinx", "sphinx-rtd-theme", "tensorboard (>=1.14.0)", "tokenizers", "transformers", "wandb (>=0.12.17)"]
+
+[[package]]
 name = "sniffio"
 version = "1.3.0"
 description = "Sniff out which async library your code is running under"
@@ -2865,6 +2887,20 @@ files = [
 
 [package.dependencies]
 mpmath = ">=0.19"
+
+[[package]]
+name = "tabulate"
+version = "0.9.0"
+description = "Pretty-print tabular data"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f"},
+    {file = "tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c"},
+]
+
+[package.extras]
+widechars = ["wcwidth"]
 
 [[package]]
 name = "terminado"
@@ -3267,4 +3303,4 @@ test = ["websockets"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.6"
-content-hash = "12f89e09569520e26f235a75968a66da914b45934e3abdaa52699c2cb02f5be8"
+content-hash = "ead4af79dc82f12576c4302a34e244d775ffa3dd6b4758783c8b1ef43aac789d"
