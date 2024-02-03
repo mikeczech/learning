@@ -10,8 +10,9 @@ from torch.utils.data import Dataset
 
 
 class InteractionDataset(Dataset):
-    def __init__(self, df: DataFrame):
+    def __init__(self, df: DataFrame, device):
         self.df = df
+        self.device = device
 
     def __len__(self):
         return len(self.df)
@@ -20,7 +21,7 @@ class InteractionDataset(Dataset):
         row = self.df.row(idx, named=True)
         customer_id = row["customer_id"]
         article_id = str(row["article_id"])
-        age = torch.tensor(row["age"], dtype=torch.float)
+        age = torch.tensor(row["age"], dtype=torch.float).to(self.device)
         index_group_name = row["index_group_name"]
         garment_group_name = row["garment_group_name"]
 
@@ -29,7 +30,7 @@ class InteractionDataset(Dataset):
 
 class QueryTower(nn.Module):
     def __init__(
-        self, user_ids: List[str], user_emb_dim: int = 16, output_dim: int = 10
+        self, user_ids: List[str], device, user_emb_dim: int = 16, output_dim: int = 10
     ):
         super(QueryTower, self).__init__()
 
@@ -40,10 +41,11 @@ class QueryTower(nn.Module):
         self.linear = nn.Linear(
             user_emb_dim + 1, output_dim
         )  # what woulde be a good target dimension?
+        self.device = device
 
     def forward(self, customer_ids: List[str], ages: torch.Tensor):
-        user_indices = self.get_user_indices(customer_ids)
-        user_features = self.user_embedding(user_indices)
+        user_indices = self.get_user_indices(customer_ids).to(self.device)
+        user_features = self.user_embedding(user_indices).to(self.device)
 
         age_features = self.normalized_age(ages.reshape(-1, 1))
 
@@ -64,6 +66,7 @@ class ItemTower(nn.Module):
         item_ids: List[str],
         index_group_names: List[str],
         garment_group_names: List[str],
+        device,
         item_emb_dim: int = 16,
         output_dim: int = 10,
     ):
@@ -82,6 +85,7 @@ class ItemTower(nn.Module):
             item_emb_dim + len(index_group_names) + len(garment_group_names),
             output_dim,
         )
+        self.device = device
 
     def forward(
         self,
@@ -89,11 +93,15 @@ class ItemTower(nn.Module):
         index_group_names: List[str],
         garment_group_names: List[str],
     ):
-        item_indices = self.get_item_indices(item_ids)
-        item_features = self.item_embedding(item_indices)
+        item_indices = self.get_item_indices(item_ids).to(self.device)
+        item_features = self.item_embedding(item_indices).to(self.device)
 
-        index_group_indices = self.get_index_group_indices(index_group_names)
-        garment_group_indices = self.get_garment_group_index(garment_group_names)
+        index_group_indices = self.get_index_group_indices(index_group_names).to(
+            self.device
+        )
+        garment_group_indices = self.get_garment_group_index(garment_group_names).to(
+            self.device
+        )
 
         index_group_features = F.one_hot(
             index_group_indices, num_classes=len(self.index_group_to_index)
@@ -128,10 +136,11 @@ class ItemTower(nn.Module):
 
 
 class TwoTowerModel(nn.Module):
-    def __init__(self, query_model, item_model):
+    def __init__(self, query_model, item_model, device):
         super(TwoTowerModel, self).__init__()
         self._query_model = query_model
         self._item_model = item_model
+        self.device = device
 
     def forward(
         self,
@@ -152,7 +161,7 @@ class TwoTowerModel(nn.Module):
         num_queries = query_embedding.shape[0]
         num_items = item_embedding.shape[0]
 
-        labels = torch.argmax(torch.eye(num_queries, num_items), dim=1)
+        labels = torch.argmax(torch.eye(num_queries, num_items).to(self.device), dim=1)
 
         loss = F.nll_loss(scores, labels)
 
