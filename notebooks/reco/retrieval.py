@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset
+from torch import Tensor
 
 
 class InteractionDataset(Dataset):
@@ -19,23 +20,22 @@ class InteractionDataset(Dataset):
 
     def __getitem__(self, idx):
         row = self.df.row(idx, named=True)
-        customer_id = row["customer_id"]
-        article_id = str(row["article_id"])
+        customer_id = row["encoded_customer_id"]
+        article_id = row["encoded_article_id"]
         age = torch.tensor(row["age"], dtype=torch.float).to(self.device)
-        index_group_name = row["index_group_name"]
-        garment_group_name = row["garment_group_name"]
+        index_group_name = row["encoded_index_group_name"]
+        garment_group_name = row["encoded_garment_group_name"]
 
         return customer_id, article_id, age, index_group_name, garment_group_name
 
 
 class QueryTower(nn.Module):
     def __init__(
-        self, user_ids: List[str], device, user_emb_dim: int = 16, output_dim: int = 10
+        self, num_users: int, device, user_emb_dim: int = 16, output_dim: int = 10
     ):
         super(QueryTower, self).__init__()
 
-        self.user_id_to_index = {user_id: i for i, user_id in enumerate(user_ids)}
-        self.user_embedding = nn.Embedding(len(user_ids), user_emb_dim)
+        self.user_embedding = nn.Embedding(num_users, user_emb_dim)
         self.normalized_age = nn.BatchNorm1d(1)
         self.relu = nn.ReLU()
         self.linear = nn.Linear(
@@ -43,10 +43,8 @@ class QueryTower(nn.Module):
         )  # what woulde be a good target dimension?
         self.device = device
 
-    def forward(self, customer_ids: List[str], ages: torch.Tensor):
-        user_indices = self.get_user_indices(customer_ids).to(self.device)
-        user_features = self.user_embedding(user_indices).to(self.device)
-
+    def forward(self, user_ids: Tensor, ages: Tensor):
+        user_features = self.user_embedding(user_ids)
         age_features = self.normalized_age(ages.reshape(-1, 1))
 
         features = torch.cat([user_features, age_features], dim=1)
@@ -54,60 +52,44 @@ class QueryTower(nn.Module):
 
         return self.linear(features)
 
-    def get_user_indices(self, user_ids: List[str]):
-        return torch.tensor(
-            [self.user_id_to_index[user_id] for user_id in user_ids], dtype=torch.long
-        )
-
 
 class ItemTower(nn.Module):
     def __init__(
         self,
-        item_ids: List[str],
-        index_group_names: List[str],
-        garment_group_names: List[str],
+        num_items: int,
+        num_index_group_names: int,
+        num_garment_group_names: int,
         device,
         item_emb_dim: int = 16,
         output_dim: int = 10,
     ):
         super(ItemTower, self).__init__()
 
-        self.item_to_id_index = {item_id: i for i, item_id in enumerate(item_ids)}
-        self.index_group_to_index = {
-            name: i for i, name in enumerate(index_group_names)
-        }
-        self.garment_group_to_index = {
-            name: i for i, name in enumerate(garment_group_names)
-        }
-        self.item_embedding = nn.Embedding(len(item_ids), item_emb_dim)
+        self.num_index_group_names = num_index_group_names
+        self.num_garment_group_names = num_garment_group_names
+
+        self.item_embedding = nn.Embedding(num_items, item_emb_dim)
         self.relu = nn.ReLU()
         self.linear = nn.Linear(
-            item_emb_dim + len(index_group_names) + len(garment_group_names),
+            item_emb_dim + num_index_group_names + num_garment_group_names,
             output_dim,
         )
         self.device = device
 
     def forward(
         self,
-        item_ids: List[str],
-        index_group_names: List[str],
-        garment_group_names: List[str],
+        item_ids: Tensor,
+        index_group_names: Tensor,
+        garment_group_names: Tensor,
     ):
-        item_indices = self.get_item_indices(item_ids).to(self.device)
-        item_features = self.item_embedding(item_indices).to(self.device)
-
-        index_group_indices = self.get_index_group_indices(index_group_names).to(
-            self.device
-        )
-        garment_group_indices = self.get_garment_group_index(garment_group_names).to(
-            self.device
-        )
+        item_features = self.item_embedding(item_ids).to(self.device)
 
         index_group_features = F.one_hot(
-            index_group_indices, num_classes=len(self.index_group_to_index)
+            index_group_names, num_classes=self.num_index_group_names
         )
+
         garment_group_features = F.one_hot(
-            garment_group_indices, num_classes=len(self.garment_group_to_index)
+            garment_group_names, num_classes=self.num_garment_group_names
         )
 
         features = torch.cat(
@@ -116,23 +98,6 @@ class ItemTower(nn.Module):
         features = self.relu(features)
 
         return self.linear(features)
-
-    def get_item_indices(self, item_ids: List[str]):
-        return torch.tensor(
-            [self.item_to_id_index[item_id] for item_id in item_ids], dtype=torch.long
-        )
-
-    def get_index_group_indices(self, index_group_names: List[str]):
-        return torch.tensor(
-            [self.index_group_to_index[name] for name in index_group_names],
-            dtype=torch.long,
-        )
-
-    def get_garment_group_index(self, garment_group_names: List[str]):
-        return torch.tensor(
-            [self.garment_group_to_index[name] for name in garment_group_names],
-            dtype=torch.long,
-        )
 
 
 class TwoTowerModel(nn.Module):
@@ -144,11 +109,11 @@ class TwoTowerModel(nn.Module):
 
     def forward(
         self,
-        customer_ids: List[str],
-        item_ids: List[str],
-        ages: torch.Tensor,
-        index_group_names: List[str],
-        garment_group_names: List[str],
+        customer_ids: Tensor,
+        item_ids: Tensor,
+        ages: Tensor,
+        index_group_names: Tensor,
+        garment_group_names: Tensor,
     ):
         query_embedding = self._query_model(customer_ids, ages)
         item_embedding = self._item_model(
