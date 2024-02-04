@@ -22,7 +22,7 @@ class InteractionDataset(Dataset):
         row = self.df.row(idx, named=True)
         customer_id = row["encoded_customer_id"]
         article_id = row["encoded_article_id"]
-        age = torch.tensor(row["age"], dtype=torch.float).to(self.device)
+        age = row["age"]
         index_group_name = row["encoded_index_group_name"]
         garment_group_name = row["encoded_garment_group_name"]
 
@@ -45,7 +45,7 @@ class QueryTower(nn.Module):
 
     def forward(self, user_ids: Tensor, ages: Tensor):
         user_features = self.user_embedding(user_ids)
-        age_features = self.normalized_age(ages.reshape(-1, 1))
+        age_features = self.normalized_age(ages.float().reshape(-1, 1))
 
         features = torch.cat([user_features, age_features], dim=1)
         features = self.relu(features)
