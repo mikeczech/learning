@@ -1029,6 +1029,26 @@ files = [
 referencing = ">=0.31.0"
 
 [[package]]
+name = "jupyter-black"
+version = "0.3.4"
+description = "A simple extension for Jupyter Notebook and Jupyter Lab to beautify Python code automatically using Black. Fork of dnanhkhoa/nb_black."
+optional = false
+python-versions = "*"
+files = [
+    {file = "jupyter-black-0.3.4.tar.gz", hash = "sha256:2a38f33d4c321eb768f426103635ac9b80b40c9e42aa06072a729e3caddca4c3"},
+    {file = "jupyter_black-0.3.4-py3-none-any.whl", hash = "sha256:8690ec1d16d173a74eecc44419755ca7209c494b213e0d7b04c40a878239e247"},
+]
+
+[package.dependencies]
+black = ">=21"
+ipython = ">=7"
+tokenize-rt = ">=4"
+
+[package.extras]
+dev = ["build (==0.9.0)", "twine (==4.0.1)", "wheel (==0.37.0)"]
+test = ["flake8 (==3.9.2)", "flake8-docstrings (==1.6.0)", "flake8-import-order (==0.18.1)", "isort (==5.11.5)", "jupyterlab (==3.6.3)", "mypy (==1.2.0)", "pep8-naming (==0.12.1)", "playwright (==1.14.1)", "pytest (==7.3.1)", "tox (==4.5.1)"]
+
+[[package]]
 name = "jupyter-client"
 version = "8.6.0"
 description = "Jupyter protocol implementation and client libraries"
@@ -2118,31 +2138,32 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4)", "pytest-co
 
 [[package]]
 name = "polars"
-version = "0.19.19"
+version = "0.20.6"
 description = "Blazingly fast DataFrame library"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "polars-0.19.19-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:812dbb0cc7027fd41ce6b3eaf100b94828fc082fab026409d48792e3e7014095"},
-    {file = "polars-0.19.19-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:21a334e18c83a259211ca6ec182498f3a89297fde9b8f75021c6881ff4411201"},
-    {file = "polars-0.19.19-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d383fac392b08a6d5830c99f6e735a48e390c1535c8f1e67707fcaab6863ade5"},
-    {file = "polars-0.19.19-cp38-abi3-manylinux_2_24_aarch64.whl", hash = "sha256:eec0e72dce84b85c427bbf395d2e181f33e60677695b95ee2e87fed51043bdea"},
-    {file = "polars-0.19.19-cp38-abi3-win_amd64.whl", hash = "sha256:6c9e597efac74f00ef9cdfd9ba8a9128ed24276916bd3d60adc6e604530e4b37"},
-    {file = "polars-0.19.19.tar.gz", hash = "sha256:3e904d197aabf36e37fda263470eaf51ec92fb865cdea4f93947713480199303"},
+    {file = "polars-0.20.6-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:59845bae0b614b3291baa889cfc2a251e1024129696bb655596f2b5556e9f9a1"},
+    {file = "polars-0.20.6-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:9e86736f68440bf97a9100fa0a79ae7ce616d1af6fd4669fff1345f03aab14c0"},
+    {file = "polars-0.20.6-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e4f4e3335fdcc863f6aac0616510b1baa5e13d5e818ebbfcb980ad534bd6edc2"},
+    {file = "polars-0.20.6-cp38-abi3-manylinux_2_24_aarch64.whl", hash = "sha256:7c7b494beea914a54bcae8868dee3988a88ecb48525df948e07aacf2fb83e711"},
+    {file = "polars-0.20.6-cp38-abi3-win_amd64.whl", hash = "sha256:a96b157d68697c8d6ef2f7c2cc1734d498c3c6cc0c9c18d4fff7283ccfabdd1d"},
+    {file = "polars-0.20.6.tar.gz", hash = "sha256:b53553308bc7e2b4f841b18f1949b61ed7f2cf155c5c64712298efa5af67a997"},
 ]
 
 [package.extras]
 adbc = ["adbc_driver_sqlite"]
-all = ["polars[adbc,cloudpickle,connectorx,deltalake,fsspec,gevent,matplotlib,numpy,pandas,pyarrow,pydantic,pyiceberg,sqlalchemy,timezone,xlsx2csv,xlsxwriter]"]
+all = ["polars[adbc,cloudpickle,connectorx,deltalake,fsspec,gevent,numpy,pandas,plot,pyarrow,pydantic,pyiceberg,sqlalchemy,timezone,xlsx2csv,xlsxwriter]"]
 cloudpickle = ["cloudpickle"]
 connectorx = ["connectorx (>=0.3.2)"]
-deltalake = ["deltalake (>=0.13.0)"]
+deltalake = ["deltalake (>=0.14.0)"]
 fsspec = ["fsspec"]
 gevent = ["gevent"]
 matplotlib = ["matplotlib"]
 numpy = ["numpy (>=1.16.0)"]
 openpyxl = ["openpyxl (>=3.0.0)"]
 pandas = ["pandas", "pyarrow (>=7.0.0)"]
+plot = ["hvplot (>=0.9.1)"]
 pyarrow = ["pyarrow (>=7.0.0)"]
 pydantic = ["pydantic"]
 pyiceberg = ["pyiceberg (>=0.5.0)"]
@@ -2953,6 +2974,17 @@ doc = ["sphinx", "sphinx_rtd_theme"]
 test = ["flake8", "isort", "pytest"]
 
 [[package]]
+name = "tokenize-rt"
+version = "5.2.0"
+description = "A wrapper around the stdlib `tokenize` which roundtrips."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "tokenize_rt-5.2.0-py2.py3-none-any.whl", hash = "sha256:b79d41a65cfec71285433511b50271b05da3584a1da144a0752e9c621a285289"},
+    {file = "tokenize_rt-5.2.0.tar.gz", hash = "sha256:9fe80f8a5c1edad2d3ede0f37481cc0cc1538a2f442c9c2f9e4feacd2792d054"},
+]
+
+[[package]]
 name = "torch"
 version = "2.1.2"
 description = "Tensors and Dynamic neural networks in Python with strong GPU acceleration"
@@ -3303,4 +3335,4 @@ test = ["websockets"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.6"
-content-hash = "ead4af79dc82f12576c4302a34e244d775ffa3dd6b4758783c8b1ef43aac789d"
+content-hash = "ead693a1ee2256da95c08659cef4f8f2915dedc135c652de33441a752e84e473"
